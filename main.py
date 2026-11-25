@@ -18,7 +18,17 @@ def main():
     data = LINE.encode("utf-8")
     with open(OUT_PATH, "wb") as f:
         f.write(data)
+        f.flush()
+        os.fsync(f.fileno())
     os.chmod(OUT_PATH, 0o644)
+    # Verify the write landed byte-identical before we report success.
+    with open(OUT_PATH, "rb") as f:
+        written = f.read()
+    if written != data:
+        raise RuntimeError(
+            "entry.txt mismatch: wrote %d bytes, read back %d bytes"
+            % (len(data), len(written))
+        )
 
 
 if __name__ == "__main__":
